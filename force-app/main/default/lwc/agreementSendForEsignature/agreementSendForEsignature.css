@@ -1,0 +1,544 @@
+:host {
+    height: 100vh !important;
+    max-height: 100vh !important;
+}
+
+.main-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background: #ffffff;
+    min-height: 0;
+}
+
+.main-card .slds-card__header {
+    display: none;
+}
+
+.main-card .slds-card__body {
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+.main-card .slds-card__footer {
+    flex: 0 0 auto;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none;
+}
+
+/* ── Custom header ── */
+.card-header {
+    flex: 0 0 auto;
+    padding: 8px 15px;
+    border: 1px solid #dddbda;
+    border-radius: 6px;
+    margin: 0.75rem 1.25rem 0 1.25rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    background: #f3f3f3;
+}
+
+/* ── PROGRESS BAR ── */
+.progress-wrapper {
+    flex: 0 0 auto;
+    padding: 0.5rem 1.25rem 0.25rem 1.25rem;
+    border-top: 1px solid #e5e5e5;
+    border-bottom: none;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 0.75rem;
+}
+
+.progress-wrapper .progress-bar-container {
+    width: 75% !important;
+    max-width: 1250px !important;
+    display: flex;
+    justify-content: center;
+}
+
+.progress-wrapper lightning-progress-indicator {
+    width: 100% !important;
+    min-height: 40px !important;
+}
+
+.progress-wrapper .slds-progress-indicator__label,
+.progress-wrapper lightning-progress-step .slds-progress-indicator__label,
+.progress-wrapper .slds-progress-indicator__list .slds-progress-indicator__item .slds-progress-indicator__label {
+    font-size: 1.20rem !important;
+    font-weight: 600 !important;
+    line-height: 1.4 !important;
+    white-space: normal !important;
+    text-align: center !important;
+    padding: 4px 14px !important;
+}
+
+.progress-wrapper .slds-progress-indicator__item .slds-progress-indicator__icon {
+    width: 2.35rem !important;
+    height: 2.35rem !important;
+}
+
+.progress-wrapper .slds-progress-indicator__list {
+    gap: 18px !important;
+    padding: 0.3rem 0 !important;
+}
+lightning-modal-body {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden !important;
+    padding: 0 !important;
+}
+/* ── CONTENT AREA ── */
+.content-area {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 1.25rem;
+}
+.step1-fixed {
+    height: 100%;
+    overflow: hidden !important;
+}
+.step1-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden !important;
+}
+.step2-organic {
+    height: auto;
+    min-height: 100%;
+    overflow: visible !important;
+}
+
+.step2-content {
+    flex: 0 0 auto;
+    overflow: visible !important;
+    background: #ffffff;
+    padding: 1rem 1.25rem;
+}
+
+/* ── SCROLLBAR STYLING ── */
+.content-scroll::-webkit-scrollbar,
+.step2-scroll-body::-webkit-scrollbar,
+.datatable-scroll-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.content-scroll::-webkit-scrollbar-track,
+.step2-scroll-body::-webkit-scrollbar-track,
+.datatable-scroll-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.content-scroll::-webkit-scrollbar-thumb,
+.step2-scroll-body::-webkit-scrollbar-thumb,
+.datatable-scroll-container::-webkit-scrollbar-thumb {
+    background: #c9c7c5;
+    border-radius: 3px;
+}
+
+/* ── FOOTER ── */
+.card-footer {
+    min-height: 45px;
+    padding: 0.5rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-top: 1px solid #dddbda;
+    background: #f3f3f3;
+    margin-top: auto;
+}
+
+/*
+   STEP 1 — NO FIXED HEIGHTS (flex-based)
+ */
+.step1-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden !important;
+    gap: 12px;
+}
+
+.step1-wrapper p {
+    flex: 0 0 auto;
+    margin-bottom: 0.75rem;
+}
+
+.step1-description {
+    flex: 0 0 auto;
+}
+
+.datatable-scroll-container {
+    height: 320px;            
+    max-height: 320px;         
+    overflow-y: auto !important;  
+    overflow-x: hidden !important;
+    border: 1px solid #dddbda;
+    border-radius: 4px;
+    background: #fff;
+}
+
+.datatable-scroll-container lightning-datatable {
+    display: block;
+    height: 100% !important;
+    max-height: 100% !important;
+}
+
+.datatable-scroll-container .slds-table {
+    min-height: 200px;
+}
+
+/*
+.custom-datatable {
+    min-height: 100%;
+}
+
+.custom-datatable,
+.custom-datatable lightning-datatable {
+    height: auto !important;
+    min-height: auto;
+}
+*/
+/*
+   STEP 2 — Scrollable content area
+ */
+.step2-outer {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    background: #ffffff;
+    border: 1px solid #dddbda;
+    border-radius: 4px;
+    overflow: hidden;
+    padding: 0;
+}
+
+.step2-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: #f3f3f3;
+    border-bottom: 1px solid #dddbda;
+    flex: 0 0 auto;
+}
+.step2-toolbar .slds-button-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.step2-outer .empty-state,
+.step2-scroll-body {
+    padding: 1rem;
+}
+/*
+.step2-scroll-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding-right: 0.25rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+}*/
+.step2-scroll-body {
+    padding: 1rem;
+    overflow: visible;
+    background: #ffffff;
+}
+.step2-outer .empty-state {
+    padding: 3rem 1rem;
+    background: #ffffff;
+}
+/* ── RECIPIENTS TABLE ── */
+.recipients-table-wrapper {
+    border: 1px solid #dddbda;   
+    border-radius: 4px;
+    background: #ffffff;
+    overflow: hidden;
+    flex: 0 1 auto;
+    min-height: 0;
+}
+
+.slds-table {
+    width: 100%;
+    table-layout: fixed;
+}
+
+.slds-table th {
+    background-color: #f3f3f3 !important;
+    font-weight: 600;
+}
+
+.recipient-item {
+    background: #ffffff;
+    transition: background-color 0.15s ease;
+}
+
+.recipient-item:hover {
+    background: #fafaf9;
+}
+
+.recipient-item.dragging {
+    opacity: 0.5;
+}
+
+.drag-handle {
+    color: #c9c7c5;
+    cursor: grab;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+/* ── MESSAGE BOX ── */
+.message-box {
+    border: 1px solid #dddbda;  
+    border-radius: 4px;
+    padding: 1rem;
+    background: #fff;
+    margin: 1rem 0 0.5rem 0;
+    flex-shrink: 0;
+    flex: 0 0 auto;
+    overflow-x: hidden;
+}
+
+.message-box-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin: 0 0 0.75rem;
+    color: #181818;
+}
+
+/* ── MORE OPTIONS ACCORDION ── */
+.options-body {
+    padding: 0.75rem 1rem 0.5rem;
+    background: #fff;
+}
+
+.reminders-row {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: nowrap;
+}
+.step2-scroll-body lightning-accordion {
+    margin-top: 0.5rem;
+}
+.reminder-dropdown {
+    width: 180px;
+}
+
+.vertical-divider {
+    width: 1px;
+    height: 38px;
+    background: #dddbda;
+    margin: 0 14px 4px;
+    flex-shrink: 0;
+}
+
+.custom-reminder-inline {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-bottom: 4px;
+    font-size: 0.875rem;
+}
+
+.section-divider {
+    width: 100%;
+    height: 1px;
+    background: #dddbda;
+    margin: 0.875rem 0;
+}
+
+.small-number-input {
+    width: 72px;
+}
+
+.date-input {
+    width: 220px;
+}
+
+/* ── EMPTY STATE ── */
+.empty-state {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: #706e6b;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: auto;
+}
+
+/*
+   ADD/EDIT RECIPIENT MODAL
+ */
+.add-recipient-modal {
+    width: 720px !important;
+    max-width: 94vw !important;
+}
+
+.add-recipient-body {
+    display: flex;
+    align-items: stretch;
+    padding: 0 !important;
+    min-height: 260px;
+    max-height: 58vh;
+}
+
+.add-recipient-nav {
+    width: 160px;
+    flex-shrink: 0;
+    background: #f8f8f8;
+    border-right: 1px solid #e0e0e0;
+    padding: 0.5rem 0;
+}
+
+.add-recipient-nav>div {
+    padding: 0.6rem 1rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    color: #3e3e3c;
+    transition: background 0.12s;
+    border-left: 3px solid transparent;
+    white-space: nowrap;
+}
+
+.add-recipient-nav>div:hover {
+    background: #eaf0fb;
+}
+
+.add-recipient-nav>div.active-tab {
+    background: #e0ecff;
+    border-left-color: #0176d3;
+    color: #0176d3;
+    font-weight: 600;
+}
+
+.add-recipient-panel {
+    flex: 1;
+    min-height: 0;
+    padding: 1rem 1.25rem;
+    overflow-y: auto;
+}
+
+.add-recipient-panel::-webkit-scrollbar {
+    width: 4px;
+}
+
+.add-recipient-panel::-webkit-scrollbar-thumb {
+    background: #c9c7c5;
+    border-radius: 2px;
+}
+
+.panel-section-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #3e3e3c;
+}
+
+.search-results-list {
+    margin-top: 8px;
+    max-height: 260px;
+    overflow-y: auto;
+    border: 1px solid #dddbda;
+    border-radius: 4px;
+}
+
+.search-result-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    border-bottom: 1px solid #f3f2f2;
+    background: #fff;
+    transition: background 0.12s;
+    min-height: 52px;
+    gap: 8px;
+    justify-content: flex-start;
+}
+
+.search-result-row:last-child {
+    border-bottom: none;
+}
+
+.search-result-row:hover {
+    background: #fafaf9;
+}
+
+.search-result-info {
+    flex: 1;
+    min-width: 120px;
+    text-align: left;
+}
+
+.result-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #181818;
+}
+
+.result-email {
+    font-size: 0.75rem;
+    color: #706e6b;
+}
+
+.add-recipient-panel lightning-combobox,
+.add-recipient-panel lightning-input {
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+.add-recipient-panel .search-result-row lightning-input {
+    width: auto !important;
+    max-width: fit-content !important;
+    flex: 0 0 auto !important;
+}
+
+/* ── MODAL CLOSE BUTTON ── */
+.slds-modal__close {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+.slds-modal__close lightning-icon {
+    --lwc-colorTextIconDefault: #ffffff;
+    --sds-c-icon-color-foreground-default: #ffffff;
+}
+
+/* ── GLOBAL ── */
+lightning-combobox,
+lightning-input {
+    max-width: 420px;
+}
+
+:host lightning-card {
+    --slds-c-card-color-border: transparent;
+    --lwc-cardColorBorder: transparent;
+}
+
+/* ── PREPARING OVERLAY ── */
+.preparing-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    z-index: 100;
+}

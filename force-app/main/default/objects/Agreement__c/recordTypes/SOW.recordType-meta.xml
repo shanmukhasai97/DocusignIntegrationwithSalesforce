@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>SOW</fullName>
+    <active>true</active>
+    <description>Statement of Work (SOW)</description>
+    <label>SOW</label>
+    <picklistValues>
+        <picklist>Region__c</picklist>
+        <values>
+            <fullName>Asia</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>US Central</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>US East</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>US West</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Status_Group__c</picklist>
+        <values>
+            <fullName>In Effect</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>In Signature</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Status__c</picklist>
+        <values>
+            <fullName>Declined</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Draft</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Execute</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Fully Signed</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>In Signature</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Sent</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Voided</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+</RecordType>

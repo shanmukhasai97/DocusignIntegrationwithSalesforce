@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Is_Terminal__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Formula or set by service: true when Status in {Completed, Declined, Voided}; excludes from polling</description>
+    <label>Is Terminal</label>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AuthProvider xmlns="http://soap.sforce.com/2006/04/metadata">
+    <authorizeUrl>https://account-d.docusign.com/oauth/auth</authorizeUrl>
+    <consumerKey>69bb6adc-ae72-4b09-886f-9cce33fa1045</consumerKey>
+    <consumerSecret>Placeholder_Value</consumerSecret>
+    <defaultScopes>signature extended openid</defaultScopes>
+    <friendlyName>DocuSign_Auth Provider</friendlyName>
+    <idTokenIssuer>https://account-d.docusign.com/</idTokenIssuer>
+    <includeOrgIdInIdentifier>false</includeOrgIdInIdentifier>
+    <isPkceEnabled>true</isPkceEnabled>
+    <providerType>OpenIdConnect</providerType>
+    <requireMfa>false</requireMfa>
+    <sendAccessTokenInHeader>true</sendAccessTokenInHeader>
+    <sendClientCredentialsInHeader>false</sendClientCredentialsInHeader>
+    <sendSecretInApis>true</sendSecretInApis>
+    <tokenUrl>https://account-d.docusign.com/oauth/token</tokenUrl>
+    <userInfoUrl>https://account-d.docusign.com/oauth/userinfo</userInfoUrl>
+</AuthProvider>

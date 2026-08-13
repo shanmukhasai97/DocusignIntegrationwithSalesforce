@@ -1,0 +1,362 @@
+<template>
+    <lightning-modal-body>
+        <article class={mainCardClass}>
+            <!-- ── HEADER ── -->
+            <div class="card-header slds-col slds-grow-none">
+                <div class="slds-media slds-media_center">
+                    <div class="slds-media__figure">
+                        <lightning-icon icon-name="standard:record_signature_task" size="large"></lightning-icon>
+                    </div>
+                    <div class="slds-media__body">
+                        <h4 class="slds-page-header__title">Send for eSignature</h4>
+                        <p class="slds-text-body_small slds-text-color_weak">{agreementName}</p>
+                    </div>
+                </div>
+            </div>
+            <!-- ── PROGRESS ── -->
+            <template if:true={showProgressBar}>
+                <div class="progress-wrapper">
+                    <div class="progress-bar-container">
+                        <lightning-progress-indicator current-step={currentStep} type="path" variant="base">
+                            <lightning-progress-step label="Select Documents" value="1"></lightning-progress-step>
+                            <lightning-progress-step label="Add Recipients" value="2"></lightning-progress-step>
+                            <lightning-progress-step label="Prepare &amp; Send" value="3"></lightning-progress-step>
+                        </lightning-progress-indicator>
+                    </div>
+                </div>
+            </template>
+            <!-- ── CONTENT AREA ── -->
+            <div class={contentAreaClass}>
+                <template if:true={isPreparing}>
+                    <div class="slds-align_absolute-center preparing-overlay">
+                        <lightning-spinner size="large"></lightning-spinner>
+                        <p class="slds-m-top_small">Preparing DocuSign...</p>
+                    </div>
+                </template>
+                <template if:false={isSuccessScreen}>
+                    <!-- ======= STEP 1 — SELECT DOCUMENTS ======= -->
+                    <template if:true={isStep1}>
+                        <div class="step1-wrapper">
+                            <p class="step1-description">
+                                <span class="slds-text-title_bold">Step 1 of 3: </span>
+                                Select the document which you would like to send for eSignature. Then click next.
+                            </p>
+                            <template if:true={hasFiles}>
+                                <!-- datatable gets its own scroll, NOT the page -->
+                                <div class="datatable-scroll-container">
+                                    <lightning-datatable key-field="contentDocumentId" data={files} columns={columns}
+                                        hide-checkbox-column onrowaction={handleRowAction} class="custom-datatable">
+                                    </lightning-datatable>
+                                </div>
+                            </template>
+                            <template if:false={hasFiles}>
+                                <div class="empty-state">
+                                    <lightning-icon icon-name="doctype:attachment" size="large"></lightning-icon>
+                                    <p class="slds-text-heading_small slds-m-top_small">No documents found</p>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <!-- ======= STEP 2 — RECIPIENTS ======= -->
+                    <template if:true={isStep2}>
+                        <div class="step2-outer">
+                            <!-- Toolbar -->
+                            <div class="step2-toolbar">
+                                <h1 class="slds-text-heading_small">Recipients</h1>
+                                <div class="slds-button-group">
+                                    <lightning-button label="Signing Order" variant={signingOrderVariant}
+                                        icon-name="utility:layers" onclick={toggleSigningOrder}>
+                                    </lightning-button>
+                                    <lightning-button label="View Routing" icon-name="utility:preview"
+                                        onclick={previewRouting}>
+                                    </lightning-button>
+                                    <lightning-button label="Add Recipient" variant="neutral" icon-name="utility:add"
+                                        onclick={openModal}>
+                                    </lightning-button>
+                                </div>
+                            </div>
+                            <!-- No recipients yet -->
+                            <template if:false={hasRecipients}>
+                                <div class="empty-state">
+                                    <svg width="120" height="70" viewBox="0 0 120 70" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <line x1="30" y1="62" x2="90" y2="62" stroke="#7DD3FC" stroke-width="2"
+                                            stroke-linecap="round" />
+                                        <line x1="22" y1="62" x2="26" y2="62" stroke="#7DD3FC" stroke-width="3"
+                                            stroke-linecap="round" />
+                                        <path d="M12 32L14 36L16 32L14 28L12 32Z" fill="#7DD3FC" />
+                                        <path d="M22 45L25 50L28 45L25 40L22 45Z" fill="#7DD3FC" />
+                                        <path d="M95 25L98 30L101 25L98 20L95 25Z" fill="#7DD3FC" />
+                                        <path d="M105 45L110 52L115 45L110 38L105 45Z" fill="#7DD3FC" />
+                                        <g>
+                                            <path
+                                                d="M45 15C45 13.8954 45.8954 13 47 13H68L75 20V55C75 56.1046 74.1046 57 73 57H47C45.8954 57 45 56.1046 45 55V15Z"
+                                                fill="#F0F9FF" stroke="#7DD3FC" stroke-width="1.5" />
+                                            <path d="M68 13V18C68 19.1046 68.8954 20 70 20H75L68 13Z" fill="#7DD3FC" />
+                                            <circle cx="60" cy="28" r="4.5" fill="#7DD3FC" />
+                                            <path d="M52 42C52 38.5 55.5 36 60 36C64.5 36 68 38.5 68 42V44H52V42Z"
+                                                fill="#7DD3FC" />
+                                        </g>
+                                        <path d="M40 35H80V58H40V35Z" fill="#E0F2FE" stroke="#7DD3FC" stroke-width="1.5"
+                                            stroke-linejoin="round" />
+                                        <path d="M40 35L58 50V58H40V35Z" fill="#BAE6FF" stroke="#7DD3FC"
+                                            stroke-width="1.5" stroke-linejoin="round" />
+                                        <path d="M80 35L62 50V58H80V35Z" fill="#BAE6FF" stroke="#7DD3FC"
+                                            stroke-width="1.5" stroke-linejoin="round" />
+                                        <path d="M40 35L60 52L80 35" fill="none" stroke="#7DD3FC" stroke-width="1.5"
+                                            stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    <p class="slds-text-heading_small slds-m-top_small">No Recipients Added</p><br />
+                                    <p class="slds-text-body_small slds-text-color_weak slds-m-bottom_medium">
+                                        Recipients you add here will receive this document.
+                                    </p>
+                                    <lightning-button label="Add Recipient" variant="brand" onclick={openModal}>
+                                    </lightning-button>
+                                </div>
+                            </template>
+                            <!-- Recipients table + message + options — scrollable -->
+                            <template if:true={hasRecipients}>
+                                <div class="step2-scroll-body content-scroll">
+                                    <div class="recipients-table-wrapper">
+                                        <table
+                                            class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_fixed-layout">
+                                            <thead>
+                                                <tr style="background:#f3f3f3;">
+                                                    <th scope="col" style="width:5rem;">
+                                                        <div class="slds-truncate">Order</div>
+                                                    </th>
+                                                    <th scope="col">
+                                                        <div class="slds-truncate">Name</div>
+                                                    </th>
+                                                    <th scope="col">
+                                                        <div class="slds-truncate">Email</div>
+                                                    </th>
+                                                    <th scope="col">
+                                                        <div class="slds-truncate">Role</div>
+                                                    </th>
+                                                    <th scope="col" style="width:6rem;">
+                                                        <div class="slds-truncate"></div>
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <template for:each={validRecipientsForDisplay} for:item="recipient">
+                                                    <tr key={recipient.key} draggable={signingOrderEnabled}
+                                                        ondragstart={handleDragStart} ondragover={handleDragOver}
+                                                        ondrop={handleDrop} ondragend={handleDragEnd}
+                                                        data-key={recipient.key}
+                                                        class="recipient-item slds-hint-parent">
+                                                        <td>
+                                                            <div class="slds-grid slds-grid_vertical-align-center">
+                                                                <lightning-icon icon-name="utility:rows" size="x-small"
+                                                                    class="drag-handle slds-m-right_x-small">
+                                                                </lightning-icon>
+                                                                <span style="font-weight:600;">{recipient.routingOrder}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="slds-truncate">{recipient.name}</div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="slds-truncate">{recipient.email}</div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="slds-truncate">{recipient.roleLabel}</div>
+                                                        </td>
+                                                        <td class="slds-text-align_right">
+                                                            <lightning-button-icon icon-name="utility:edit"
+                                                                variant="bare" alternative-text="Edit"
+                                                                data-key={recipient.key} onclick={openEditModal}
+                                                                class="slds-m-right_x-small">
+                                                            </lightning-button-icon>
+                                                            <lightning-button-icon icon-name="utility:delete"
+                                                                variant="bare" alternative-text="Delete"
+                                                                data-key={recipient.key} onclick={removeRecipient}>
+                                                            </lightning-button-icon>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <!-- Message to All Recipients -->
+                                    <div class="message-box">
+                                        <p class="message-box-title">Message to All Recipients</p>
+                                        <lightning-input label="Email Subject" value={emailSubject}
+                                            onchange={handleSubject} class="slds-m-bottom_small">
+                                        </lightning-input>
+                                        <lightning-textarea label="Email Message" value={emailMessage}
+                                            onchange={handleMessage}>
+                                        </lightning-textarea>
+                                    </div>
+                                    <!-- More Options accordion -->
+                                    <lightning-accordion allow-multiple-sections-open>
+                                        <lightning-accordion-section name="moreOptions" label="More Options">
+                                            <div class="options-body">
+                                                <h3 class="slds-text-title_bold slds-m-bottom_small">Reminders</h3>
+                                                <div class="reminders-row">
+                                                    <lightning-combobox label="Automatic Reminders" value={reminderType}
+                                                        options={reminderOptions} onchange={handleReminderTypeChange}
+                                                        class="reminder-dropdown">
+                                                    </lightning-combobox>
+                                                    <template if:true={showCustomReminder}>
+                                                        <div class="vertical-divider"></div>
+                                                        <div class="custom-reminder-inline">
+                                                            <span>Every</span>
+                                                            <lightning-input type="number" variant="label-hidden"
+                                                                value={reminderDays} onchange={handleReminderDaysChange}
+                                                                class="small-number-input">
+                                                            </lightning-input>
+                                                            <span>days</span>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                                <div class="section-divider"></div>
+                                                <h3 class="slds-text-title_bold slds-m-bottom_small">Expiration</h3>
+                                                <div class="slds-m-bottom_small">
+                                                    <lightning-input type="date" label="Envelope expires"
+                                                        value={expireDate} onchange={handleExpireDateChange}
+                                                        class="date-input">
+                                                    </lightning-input>
+                                                </div>
+                                                <div class="slds-grid slds-grid_vertical-align-center">
+                                                    <span class="slds-m-right_small">Days before envelope expires:</span>
+                                                    <lightning-input type="number" variant="label-hidden"
+                                                        value={expireDays} onchange={handleExpireDaysChange}
+                                                        class="small-number-input">
+                                                    </lightning-input>
+                                                </div>
+                                            </div>
+                                        </lightning-accordion-section>
+                                    </lightning-accordion>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                </template>
+            </div>
+            <!-- ── FOOTER ── -->
+            <template if:false={isSuccessScreen}>
+                <div class="card-footer slds-col slds-grow-none">
+                    <template if:true={isStep1}>
+                        <lightning-button label="Cancel" onclick={handleCancel}></lightning-button>
+                    </template>
+                    <template if:false={isFirstStep}>
+                        <lightning-button label="Back" onclick={handleBack}></lightning-button>
+                    </template>
+                    <lightning-button variant="brand" label={nextLabel} icon-name="utility:forward"
+                        icon-position="right" onclick={handleNext} disabled={isNextDisabled}>
+                    </lightning-button>
+                </div>
+            </template>
+            <!-- ===================== EDIT RECIPIENT MODAL ===================== -->
+            <template if:true={showEditModal}>
+                <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                    <div class="slds-modal__container add-recipient-modal">
+                        <header class="slds-modal__header">
+                            <lightning-button-icon icon-name="utility:close" alternative-text="Close"
+                                variant="bare-inverse" class="slds-modal__close" size="large" onclick={closeEditModal}>
+                            </lightning-button-icon>
+                            <h2 class="slds-text-heading_medium">Edit Recipient</h2>
+                        </header>
+                        <div class="slds-modal__content slds-p-around_medium">
+                            <lightning-input label="Name" value={modalName} onchange={handleModalName} required>
+                            </lightning-input>
+                            <lightning-input label="Email" type="email" value={modalEmail} onchange={handleModalEmail}
+                                required>
+                            </lightning-input>
+                            <lightning-combobox label="Role" value={modalRole} options={roleOptions}
+                                onchange={handleModalRoleChange}>
+                            </lightning-combobox>
+                        </div>
+                        <footer class="slds-modal__footer">
+                            <button class="slds-button slds-button_neutral" onclick={closeEditModal}>Cancel</button>
+                            <button class="slds-button slds-button_brand" onclick={saveEditedRecipient}>Save Changes</button>
+                        </footer>
+                    </div>
+                </section>
+                <div class="slds-backdrop slds-backdrop_open"></div>
+            </template>
+            <!-- ===================== ADD RECIPIENT MODAL ===================== -->
+            <template if:true={showModal}>
+                <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                    <div class="slds-modal__container add-recipient-modal">
+                        <header class="slds-modal__header">
+                            <lightning-button-icon icon-name="utility:close" alternative-text="Close"
+                                variant="bare-inverse" class="slds-modal__close" size="large" onclick={closeModal}>
+                            </lightning-button-icon>
+                            <h2 class="slds-modal__title">Add Recipient</h2>
+                        </header>
+                        <div class="slds-modal__content add-recipient-body">
+                            <!-- Left nav -->
+                            <nav class="add-recipient-nav">
+                                <div class={sfTabClass} onclick={handleLeftNavClick} data-mode="sf">
+                                    From Salesforce
+                                </div>
+                                <div class={manualTabClass} onclick={handleLeftNavClick} data-mode="manual">
+                                    By Name &amp; Email
+                                </div>
+                            </nav>
+                            <!-- Right panel -->
+                            <div class="add-recipient-panel">
+                                <!-- From Salesforce -->
+                                <template if:true={isSalesforce}>
+                                    <p class="panel-section-label">*Select User or Contact</p>
+                                    <lightning-input type="search" variant="label-hidden"
+                                        placeholder="Search by Name..." value={searchKey} onchange={handleSearch}>
+                                    </lightning-input>
+                                    <div class="search-results-list">
+                                        <template if:true={hasSearchResults}>
+                                            <template for:each={searchResults} for:item="result">
+                                                <div key={result.key} class="search-result-row">
+                                                    <lightning-input type="checkbox" data-id={result.recordId}
+                                                        checked={result.isSelected} onchange={handleUserCheckbox}>
+                                                    </lightning-input>
+                                                    <div class="search-result-info">
+                                                        <div class="result-name">{result.name}</div>
+                                                        <div class="result-email">{result.email}</div>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </template>
+                                    </div>
+                                </template>
+                                <!-- By Name & Email -->
+                                <template if:true={isManual}>
+                                    <lightning-input label="Full Name" value={modalName} onchange={handleModalName}
+                                        class="slds-m-bottom_small">
+                                    </lightning-input>
+                                    <lightning-input label="Email Address" type="email" value={modalEmail}
+                                        onchange={handleModalEmail}>
+                                    </lightning-input>
+                                </template>
+                                <!-- Action / Role -->
+                                <div class="slds-m-top_medium">
+                                    <lightning-combobox label="Action" value={modalRole} options={roleOptions}
+                                        dropdown-alignment="auto" onchange={handleModalRoleChange}>
+                                    </lightning-combobox>
+                                </div>
+                            </div>
+                        </div>
+                        <footer class="slds-modal__footer">
+                            <lightning-button label="Cancel" onclick={closeModal} class="slds-m-right_x-small">
+                            </lightning-button>
+                            <template if:true={isSalesforce}>
+                                <lightning-button label="Add Selected" variant="brand"
+                                    onclick={addRecipientsFromSalesforce} disabled={isSelectDisabled}>
+                                </lightning-button>
+                            </template>
+                            <template if:false={isSalesforce}>
+                                <lightning-button label="Add Recipient" variant="brand" onclick={addManualRecipient}
+                                    disabled={isAddDisabled}>
+                                </lightning-button>
+                            </template>
+                        </footer>
+                    </div>
+                </section>
+                <div class="slds-backdrop slds-backdrop_open"></div>
+            </template>
+        </article>
+    </lightning-modal-body>
+</template>

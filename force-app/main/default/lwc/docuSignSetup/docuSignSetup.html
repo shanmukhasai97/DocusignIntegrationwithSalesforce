@@ -1,0 +1,174 @@
+<template>
+    <div class="slds-p-around_medium" style="background-color: #fafaf9; min-height: 100vh;">
+        
+        <div class="slds-m-bottom_medium">
+            <h1 class="slds-text-heading_medium" style="font-weight: 700;">Accordor DocuSign Connection</h1>
+            <p class="slds-text-color_weak slds-m-top_xx-small">Connect to send documents for e-signature from within Salesforce.</p>
+        </div>
+
+        <div class="slds-box slds-theme_default" style="background-color: #ffffff; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            
+            <div class="slds-grid slds-wrap slds-grid_vertical-align-center slds-p-bottom_medium" style="border-bottom: 1px solid #e5e5e5;">
+                
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_3-of-4">
+                    <div class="slds-media slds-media_center">
+                        <div class="slds-media__figure">
+                            <div style="background-color: #3bb16f; padding: 10px; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                                <lightning-icon icon-name="utility:edit_form" size="medium" variant="inverse"></lightning-icon>
+                            </div>
+                        </div>
+                        <div class="slds-media__body slds-m-left_small">
+                            <h2 class="slds-text-heading_small" style="font-weight: 700;">eSignature</h2>
+                            <p class="slds-text-body_regular slds-m-top_xx-small slds-text-color_weak">Easily send agreement documents to DocuSign for secure electronic signatures and real-time status tracking.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-4 slds-text-align_right slds-m-top_medium slds-medium-show--inline-block">
+                    <template if:false={isConnected}>
+                        <lightning-button label="Connect" variant="neutral" onclick={handleConnect} disabled={isLoading}></lightning-button>
+                    </template>
+                    <template if:true={isConnected}>
+                        <lightning-button label="Disconnect" variant="neutral" onclick={handleDisconnect} disabled={isLoading}></lightning-button>
+                    </template>
+                </div>
+            </div>
+
+            <div class="slds-p-top_large">
+                
+                <template if:true={isLoading}>
+                    <div class="slds-is-relative slds-p-around_large slds-align_absolute-center slds-flex-column">
+                        <lightning-spinner size="medium" alternative-text="Loading..."></lightning-spinner>
+                        <template if:true={isCompleting}>
+                            <p class="slds-m-top_large slds-text-color_weak">Completing DocuSign connection...</p>
+                        </template>
+                    </div>
+                </template>
+
+                <template if:false={isLoading}>
+                    
+                    <template if:true={isConnected}>
+                        <div class="slds-text-align_center">
+                            <h3 class="slds-text-heading_small" style="color: #0176d3; margin-bottom: 0.5rem;">Connected to Account</h3>
+                            <p class="slds-text-heading_small">{displayAccountName}</p>
+<p class="slds-text-body_regular slds-text-color_weak">{displayCompanyName}</p>
+<p class="slds-text-body_regular">{displayAccountId}</p>
+                            <p class="slds-text-body_regular">{environmentLabel} / {displaySite}</p>
+
+                            <div class="slds-m-top_medium">
+                                <template if:true={isPollingRunning}>
+                                    <p style="color:#2e844a;">&#10003; Background polling is active</p>
+                                </template>
+                                <template if:false={isPollingRunning}>
+                                    <div class="slds-box slds-theme_warning slds-m-bottom_small slds-align_absolute-center" style="max-width: 400px; margin: 0 auto 0.5rem auto; padding: 0.5rem;">
+                                        <p>Background polling is not running.</p>
+                                    </div>
+                                    <lightning-button label="Start Polling" variant="brand" icon-name="utility:refresh" onclick={handleRestartPolling}></lightning-button>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template if:false={isConnected}>
+    <div class="slds-align_absolute-center slds-flex-column">
+        <div style="width: 400px;">
+
+            <lightning-combobox
+                label="Environment"
+                value={environment}
+                options={environmentOptions}
+                onchange={handleEnvironmentChange}
+                class="slds-m-bottom_medium">
+            </lightning-combobox>
+
+            <lightning-input
+                label="DocuSign API Account ID"
+                value={configAccountId}
+                onchange={handleConfigAccountIdChange}
+                placeholder="e.g. 7ca49bab-77d6-41fb-b1b0-1095a822ca1f"
+                class="slds-m-bottom_medium">
+            </lightning-input>
+
+            <lightning-input
+                label="Auth Base URL"
+                value={configAuthBaseUrl}
+                onchange={handleConfigAuthBaseUrlChange}
+                placeholder="e.g. https://account-d.docusign.com"
+                class="slds-m-bottom_medium">
+            </lightning-input>
+
+            <lightning-input
+                label="DocuSign Secret Key (HMAC)"
+                value={configSecretKey}
+                onchange={handleConfigSecretKeyChange}
+                placeholder="e.g. 1931e477-f5dc-49e6-8194-2b4faad2a969"
+                class="slds-m-bottom_medium">
+            </lightning-input>
+            <!-- API Version -->
+            <lightning-input
+                label="API Version"
+                value={configApiVersion}
+                onchange={handleConfigApiVersionChange}
+                placeholder="e.g. v2.1"
+                class="slds-m-bottom_medium">
+            </lightning-input>
+
+            <!-- Active Checkbox -->
+            <lightning-input
+                type="checkbox"
+                label="Active"
+                checked={configActive}
+                onchange={handleConfigActiveChange}
+                class="slds-m-bottom_medium">
+            </lightning-input>
+
+            <!-- Enable Partial Signatures -->
+            <lightning-input
+                type="checkbox"
+                label="Enable Partial Signatures"
+                checked={configEnablePartialSign}
+                onchange={handleConfigEnablePartialSignChange}
+                class="slds-m-bottom_medium">
+            </lightning-input>
+
+            <template if:true={configSaveSuccess}>
+                <div class="slds-box slds-theme_success slds-m-bottom_small"
+                     style="padding: 0.5rem;">
+                    &#10003; Configuration saved successfully.
+                </div>
+            </template>
+
+            <template if:true={configSaveError}>
+                <div class="slds-box slds-theme_error slds-m-bottom_small"
+                     style="padding: 0.5rem;">
+                    {configSaveError}
+                </div>
+            </template>
+
+            <div class="slds-grid slds-gutters slds-m-bottom_medium">
+                <div class="slds-col">
+                    <lightning-button
+                        label="Save Configuration"
+                        variant="brand"
+                        onclick={handleSaveConfig}
+                        disabled={isSavingConfig}>
+                    </lightning-button>
+                </div>
+            </div>
+
+            <template if:true={errorMessage}>
+                <div class="slds-box slds-theme_error slds-m-top_medium"
+                     style="width: 100%;">
+                    {errorMessage}
+                </div>
+            </template>
+
+        </div>
+    </div>
+</template>
+
+                </template>
+            </div>
+        </div>
+    </div>
+</template>

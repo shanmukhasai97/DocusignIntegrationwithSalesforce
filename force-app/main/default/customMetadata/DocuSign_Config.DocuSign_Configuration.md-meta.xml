@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>DocuSign Configuration</label>
+    <protected>false</protected>
+    <values>
+        <field>API_Version__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Active__c</field>
+        <value xsi:type="xsd:boolean">false</value>
+    </values>
+    <values>
+        <field>Auth_Base_URL__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>DocuSign_API_Account_ID__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Docusign_Secret_Keys__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Enable_Partial_Signatures__c</field>
+        <value xsi:type="xsd:boolean">false</value>
+    </values>
+</CustomMetadata>

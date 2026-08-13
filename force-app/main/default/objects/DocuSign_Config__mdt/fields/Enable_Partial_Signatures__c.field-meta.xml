@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Enable_Partial_Signatures__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Controls whether  partially Signed PDFs are need attach to Agreement</description>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>Enable Partial Signatures</label>
+    <type>Checkbox</type>
+</CustomField>
