@@ -25,7 +25,7 @@ global with sharing class DocuSignPostInstallHandler implements InstallHandler {
     private void assignPermissionSets(Id userId) {
         // Find the permission set IDs by name
         Map<String, Id> psMap = new Map<String, Id>();
-        for (PermissionSet ps : [ SELECT Id, Name FROM PermissionSet WHERE Name IN ('DocuSign_Admin', 'DocuSign_User')]) {
+        for (PermissionSet ps : [ SELECT Id, Name FROM PermissionSet WHERE Name IN ('DocuSign_Admin')]) {
             psMap.put(ps.Name, ps.Id);
         }
         if (psMap.isEmpty()) {

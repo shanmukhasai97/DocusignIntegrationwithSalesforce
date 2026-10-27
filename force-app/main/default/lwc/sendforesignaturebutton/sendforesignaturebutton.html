@@ -3,20 +3,26 @@
         <div class="slds-m-around_medium">
 
             <!-- Send for eSignature -->
-            <lightning-button
-                label="Send for eSignature"
-                variant="brand"
-                onclick={handleSendForEsignature}
+            <lightning-button label="Send for eSignature" variant="brand" onclick={handleSendForEsignature}
                 class="slds-m-around_small">
             </lightning-button>
 
+            <!-- Check for Signed Documents -->
+            <lightning-button label="Get Signed Documents" variant="brand" onclick={handleCheckForSignedDocuments}
+                disabled={isChecking} class="slds-m-around_small">
+            </lightning-button>
+            <template if:true={isChecking}>
+                <lightning-spinner alternative-text="Checking DocuSign" size="small">
+                </lightning-spinner>
+            </template>
+
             <!-- Display Templates -->
             <!--<lightning-button
-                label="Display Templates"
-                variant="brand"
-                onclick={handleDisplayTemplates}
-                class="slds-m-around_small">
-            </lightning-button>-->
+            label="Display Templates"
+            variant="brand"
+            onclick={handleDisplayTemplates}
+            class="slds-m-around_small">
+        </lightning-button>-->
 
         </div>
     </lightning-card>

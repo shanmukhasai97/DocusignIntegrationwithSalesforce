@@ -43,11 +43,7 @@ public without sharing class DocuSignAuthService {
         environment = environment.equalsIgnoreCase('Production') ? 'Production' : 'Demo';
         DocuSign_Config__mdt activeCheckCfg = DocuSignConfigService.getConfig();
         if (activeCheckCfg.Active__c != true) {
-            throw new AuraHandledException(
-                'DocuSign integration is currently inactive. ' +
-                'Ask your Salesforce admin to check "Active" on the DocuSign_Configuration ' +
-                'Custom Metadata record before connecting.'
-            );
+            throw new AuraHandledException('DocuSign integration is currently inactive. ' + 'Ask your Salesforce admin to check "Active" on the DocuSign_Configuration ' + 'Custom Metadata record before connecting.');
         }
         /* Validate org-level config matches the requested environment */
         try {
@@ -59,9 +55,7 @@ public without sharing class DocuSignAuthService {
         Id userId = UserInfo.getUserId();
         Map<String, Object> userInfo;
         try {
-            
             AuthProvider provider = [SELECT Id FROM AuthProvider WHERE DeveloperName = :AUTH_PROVIDER_NAME LIMIT 1];
-            
             String rawUiToken;
             if (Test.isRunningTest()) {
                 rawUiToken = 'TEST_TOKEN';
@@ -101,7 +95,7 @@ public without sharing class DocuSignAuthService {
         if (String.isBlank(oauthAccountId)) {
             throw new AuraHandledException('Unable to determine the DocuSign Account ID from the OAuth response. ' + 'Raw accounts returned: ' + accounts.size());
         }
-        /* 5 — Account isolation */
+        /* Account isolation */
         String allowedAccountId = DocuSignConfigService.getAllowedAccountId();
         if (String.isNotBlank(allowedAccountId)) {
             if (!allowedAccountId.equalsIgnoreCase(oauthAccountId)) {

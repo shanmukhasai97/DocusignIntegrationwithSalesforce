@@ -480,13 +480,10 @@ static void getApiNamedCredential_alwaysReturnsDocuSignApi() {
     resetMocks();
 }
 
-    @isTest
-	static void getAuthNamedCredential_returnsDocuSignAuth() {
-    String ns = DocuSignConfigService.getNamespace();
-    String expected = String.isNotBlank(ns) ? 'callout:' + ns + '__DocuSign_Auth' : 'callout:DocuSign_Auth';
-    String actual = DocuSignConfigService.getAuthNamedCredential();
-    System.assertEquals(expected, actual, 'Auth Named Credential should resolve with correct namespace prefix.');
-}
+    @IsTest
+    static void getAuthNamedCredential_returnsDocuSignAuth() {
+        System.assertEquals('callout:DocuSign_Auth', DocuSignConfigService.getAuthNamedCredential());
+    }
 
     @IsTest
     static void getAllowedAccountId_returnsTrimmedLowercaseValue() {

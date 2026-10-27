@@ -6,6 +6,7 @@ import sendForSignature from '@salesforce/apex/DocuSignAgreementService.sendForS
 import createSenderView from '@salesforce/apex/DocuSignAgreementService.createSenderView';
 import searchRecipients from '@salesforce/apex/DocuSignAgreementService.searchRecipients';
 import isPollingActive from '@salesforce/apex/DocuSignAgreementService.isPollingActive';
+import getEmailTemplateDefaults from '@salesforce/apex/DocuSignAgreementService.getEmailTemplateDefaults';
 import { getRecord, getFieldValue, getRecordNotifyChange } from 'lightning/uiRecordApi';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
@@ -47,10 +48,9 @@ const columns = [
 ];
 
 export default class AgreementSendForEsignature extends LightningModal {
-    // ── API ──
+    //  API 
     @api recordId;
-
-    // ── TRACKED STATE ──
+    //  TRACKED STATE 
     @track files = [];
     @track recipients = [];
     @track searchResults = [];
@@ -60,8 +60,10 @@ export default class AgreementSendForEsignature extends LightningModal {
     @track showSuccessScreen = false;
     @track isPreparing = false;
     @track isSearching = false;
+    // track docusigntagOptions
+    @track selectedValue = '';
 
-    // ── UI STATE ──
+    //  UI STATE 
     currentStep = '1';
     columns = columns;
     modalMode = 'sf';
@@ -79,23 +81,19 @@ export default class AgreementSendForEsignature extends LightningModal {
     isSending = false;
     sendStartTime = null;
     subscription = null;
-
-    // ── MODAL FIELDS ──
+    //  MODAL FIELDS 
     modalName = '';
     modalEmail = '';
     modalRole = 'signer';
     editRecipientKey = null;
 
-    // ── OPTIONS ──
     roleOptions = [
-        { label: 'Needs to Sign',    value: 'signer' },
-        { label: 'Receives a Copy',  value: 'copy'   },
-        { label: 'Needs to View',    value: 'viewer' }
+        { label: 'Needs to Sign', value: 'signer' },
+        { label: 'Receives a Copy', value: 'copy' },
+        { label: 'Needs to View', value: 'viewer' }
     ];
 
-    // ─────────────────────────────────────────────
     // WIRES
-    // ─────────────────────────────────────────────
     @wire(getAgreementFiles, { agreementId: '$recordId' })
     wiredFiles({ data, error }) {
         if (data) {
@@ -115,41 +113,48 @@ export default class AgreementSendForEsignature extends LightningModal {
     @wire(getRecord, { recordId: '$recordId', fields: AGREEMENT_FIELDS })
     wiredAgreement({ data, error }) {
         if (data) {
-            this.agreementName  = getFieldValue(data, 'Agreement__c.Name');
+            this.agreementName = getFieldValue(data, 'Agreement__c.Name');
             this.docusignStatus = getFieldValue(data, 'Agreement__c.Status__c');
         } else if (error) {
             console.error('[eSignature] wiredAgreement error:', error);
         }
     }
 
-   connectedCallback() {
-    this.subscribeToPlatformEvents();
-    
-    Promise.resolve().then(() => {
-        try {
-            const modalContainer = this.template?.host?.closest('.slds-modal__container');
-            if (modalContainer) {
-                modalContainer.style.height = '100vh';
-                modalContainer.style.maxHeight = '100vh';
+    connectedCallback() {
+        this.subscribeToPlatformEvents();
+        Promise.resolve().then(() => {
+            try {
+                const modalContainer = this.template?.host?.closest('.slds-modal__container');
+                if (modalContainer) {
+                    modalContainer.style.height = '100vh';
+                    modalContainer.style.maxHeight = '100vh';
+                }
+            } catch (e) {
+                console.log('[eSignature] modal height:', e);
             }
-        } catch (e) {
-            console.log('[eSignature] modal height:', e);
-        }
-    });
-}
- 
-disconnectedCallback() {
-    this.unsubscribeFromPlatformEvents();
-}
+        });
 
-    // ─────────────────────────────────────────────
+        getEmailTemplateDefaults()
+            .then(defaults => {
+                if (defaults) {
+                    this.emailSubject = defaults.subject || this.emailSubject;
+                    this.emailMessage = defaults.body || this.emailMessage;
+                }
+            })
+            .catch(error => {
+                /* silently keep defaults — don't block sending over a template lookup failure */
+                console.log('template lookup failure', error);
+            });
+    }
+    disconnectedCallback() {
+        this.unsubscribeFromPlatformEvents();
+    }
+
     // PLATFORM EVENTS
-    // ─────────────────────────────────────────────
     subscribeToPlatformEvents() {
         subscribe(DOCUSIGN_EVENT_CHANNEL, -1, this.handlePlatformEvent.bind(this))
             .then(response => { this.subscription = response; })
             .catch(error => { console.error('[eSignature] Subscription Error', error); });
-
         onError(error => { console.error('[eSignature] EMP API Error', error); });
     }
 
@@ -163,14 +168,10 @@ disconnectedCallback() {
     handlePlatformEvent(event) {
         const payload = event?.data?.payload;
         if (!payload) return;
-
         if (payload.Agreement_Id__c !== this.recordId) return;
-
-        const newStatus  = payload.New_Status__c;
+        const newStatus = payload.New_Status__c;
         const isTerminal = payload.Is_Terminal__c;
-
         getRecordNotifyChange([{ recordId: this.recordId }]);
-
         if (isTerminal && newStatus === 'Completed') {
             this.toast('Signed!', 'Document fully signed. PDF will appear shortly.', 'success');
             setTimeout(() => getRecordNotifyChange([{ recordId: this.recordId }]), 5000);
@@ -187,9 +188,7 @@ disconnectedCallback() {
         }
     }
 
-    // ─────────────────────────────────────────────
     // GETTERS
-    // ─────────────────────────────────────────────
     get isStep1() { return this.currentStep === '1'; }
     get isStep2() { return this.currentStep === '2'; }
     get isStep3() { return this.currentStep === '3'; }
@@ -198,60 +197,61 @@ disconnectedCallback() {
     get hasFiles() { return this.files?.length > 0; }
     get selectedFiles() { return this.files.filter(f => f.isSelected); }
     get hasRecipients() { return this.recipients?.length > 0; }
-
     get validRecipientsCount() {
         return this.recipients.filter(r => r.name && r.email).length;
     }
-
     get showProgressBar() {
         return !this.isSuccessScreen && !this.isPreparing && !this.isSending;
     }
-
     get nextLabel() {
-        return this.currentStep === '2' ? 'Prepare & Send' : 'Next';
+        if (this.currentStep !== '2') return 'Next';
+        return this.selectedValue === 'yes' ? 'Send' : 'Prepare & Send';
     }
-
     get isNextDisabled() {
         if (this.currentStep === '1') return this.selectedFiles.length === 0;
         if (this.currentStep === '2') return this.validRecipientsCount === 0 || this.isSending;
         return false;
     }
-
     get isSalesforce() { return this.modalMode === 'sf'; }
-    get isManual()     { return this.modalMode === 'manual'; }
+    get isManual() { return this.modalMode === 'manual'; }
     get hasSearchResults() { return this.searchResults?.length > 0; }
     get isSelectDisabled() { return this.selectedUsersForPreview.length === 0; }
-    get isAddDisabled()    { return !this.modalName || !this.modalEmail; }
+    get isAddDisabled() { return !this.modalName || !this.modalEmail; }
     get showCustomReminder() { return this.reminderType === 'custom'; }
-    get signingOrderVariant() { return this.signingOrderEnabled ? 'brand' : 'neutral'; }
-    get sfTabClass()     { return this.modalMode === 'sf'     ? 'active-tab' : ''; }
+    //get signingOrderVariant() { return this.signingOrderEnabled ? 'brand' : 'neutral'; }
+    get sfTabClass() { return this.modalMode === 'sf' ? 'active-tab' : ''; }
     get manualTabClass() { return this.modalMode === 'manual' ? 'active-tab' : ''; }
-
     get contentAreaClass() {
-    return this.isStep1
-        ? 'content-area step1-content'
-        : 'content-area step2-content';
-}
-get mainCardClass() {
+        return this.isStep1
+            ? 'content-area step1-content'
+            : 'content-area step2-content';
+    }
+    get mainCardClass() {
         return this.isStep1
             ? 'slds-card main-card slds-grid slds-grid_vertical step1-fixed'
             : 'slds-card main-card slds-grid slds-grid_vertical step2-organic';
     }
-
     get reminderOptions() {
         return [
-            { label: 'Do Not Remind', value: 'none'   },
-            { label: 'Every day',     value: 'every1' },
-            { label: 'Every 2 days',  value: 'every2' },
-            { label: 'Every 3 days',  value: 'every3' },
-            { label: 'Every 4 days',  value: 'every4' },
-            { label: 'Every 5 days',  value: 'every5' },
-            { label: 'Every 6 days',  value: 'every6' },
-            { label: 'Every 7 days',  value: 'every7' },
-            { label: 'Custom',        value: 'custom' }
+            { label: 'Do Not Remind', value: 'none' },
+            { label: 'Every day', value: 'every1' },
+            { label: 'Every 2 days', value: 'every2' },
+            { label: 'Every 3 days', value: 'every3' },
+            { label: 'Every 4 days', value: 'every4' },
+            { label: 'Every 5 days', value: 'every5' },
+            { label: 'Every 6 days', value: 'every6' },
+            { label: 'Every 7 days', value: 'every7' },
+            { label: 'Custom', value: 'custom' }
         ];
     }
-
+    // Define the picklist options
+    get docusigntagOptions() {
+        return [
+            { label: 'None', value: 'none' },
+            { label: 'Yes — Added Custom Document Tags', value: 'yes' },
+            { label: 'No — Use DocuSign’s standard Drag & Drop Tags', value: 'no' }
+        ];
+    }
     get validRecipientsForDisplay() {
         return this.recipients.map(r => ({
             ...r,
@@ -259,9 +259,7 @@ get mainCardClass() {
         }));
     }
 
-    // ─────────────────────────────────────────────
     // FILES
-    // ─────────────────────────────────────────────
     handleRowAction(event) {
         const { action, row } = event.detail;
         if (action.name === 'select_row') {
@@ -276,15 +274,13 @@ get mainCardClass() {
             return {
                 ...file,
                 isSelected,
-                selectIcon:  isSelected ? 'utility:check' : 'utility:add',
+                selectIcon: isSelected ? 'utility:check' : 'utility:add',
                 selectClass: isSelected ? 'custom-check-button' : 'custom-add-button'
             };
         });
     }
 
-    // ─────────────────────────────────────────────
     // SEARCH
-    // ─────────────────────────────────────────────
     handleSearch(event) {
         this.searchKey = event.target.value;
 
@@ -329,16 +325,13 @@ get mainCardClass() {
             );
         }
 
-        // FIX: update isSelected for ALL results, not only the toggled one
         this.searchResults = this.searchResults.map(r => ({
             ...r,
             isSelected: r.recordId === recordId ? isChecked : r.isSelected
         }));
     }
 
-    // ─────────────────────────────────────────────
     // RECIPIENT MODALS — open/close
-    // ─────────────────────────────────────────────
     openModal() {
         this.resetModalFields();
         this.modalMode = 'sf';
@@ -357,18 +350,18 @@ get mainCardClass() {
         if (!recipient) return;
 
         this.editRecipientKey = recipient.key;
-        this.modalName  = recipient.name;
+        this.modalName = recipient.name;
         this.modalEmail = recipient.email;
-        this.modalRole  = recipient.role || 'signer';
+        this.modalRole = recipient.role || 'signer';
         this.showEditModal = true;
     }
 
     closeEditModal() {
         this.showEditModal = false;
         this.editRecipientKey = null;
-        this.modalName  = '';
+        this.modalName = '';
         this.modalEmail = '';
-        this.modalRole  = 'signer';
+        this.modalRole = 'signer';
     }
 
     saveEditedRecipient() {
@@ -390,24 +383,24 @@ get mainCardClass() {
 
     resetModalFields() {
         this.selectedUsersForPreview = [];
-        this.searchKey    = '';
+        this.searchKey = '';
         this.searchResults = [];
-        this.modalName    = '';
-        this.modalEmail   = '';
-        this.modalRole    = 'signer';
+        this.modalName = '';
+        this.modalEmail = '';
+        this.modalRole = 'signer';
     }
 
-    // ─────────────────────────────────────────────
     // MODAL FIELD HANDLERS
-    // ─────────────────────────────────────────────
     handleLeftNavClick(event) { this.modalMode = event.currentTarget.dataset.mode; }
-    handleModalName(event)    { this.modalName  = event.target.value; }
-    handleModalEmail(event)   { this.modalEmail = event.target.value; }
+    handleModalName(event) { this.modalName = event.target.value; }
+    handleModalEmail(event) { this.modalEmail = event.target.value; }
     handleModalRoleChange(event) { this.modalRole = event.detail.value; }
-
-    // ─────────────────────────────────────────────
+    // Capture the user's selection
+    handleChange(event) {
+        this.selectedValue = event.detail.value;
+        console.log('Selected Option: ' + this.selectedValue);
+    }
     // RECIPIENTS — add / remove
-    // ─────────────────────────────────────────────
     addManualRecipient() {
         if (!this.modalName || !this.modalEmail) {
             this.toast('Error', 'Name and Email are required', 'error');
@@ -415,10 +408,10 @@ get mainCardClass() {
         }
 
         const recipient = {
-            key:   `${Date.now()}_${Math.random()}`,
-            name:  this.modalName,
+            key: `${Date.now()}_${Math.random()}`,
+            name: this.modalName,
             email: this.modalEmail,
-            role:  this.modalRole || 'signer'
+            role: this.modalRole || 'signer'
         };
 
         this.recipients = [...this.recipients, recipient];
@@ -442,12 +435,12 @@ get mainCardClass() {
                 continue;
             }
             newRecipients.push({
-                key:      `${Date.now()}_${Math.random()}`,
-                name:     user.name,
-                email:    user.email,
+                key: `${Date.now()}_${Math.random()}`,
+                name: user.name,
+                email: user.email,
                 recordId: user.recordId,
-                type:     user.type,
-                role:     this.modalRole || 'signer'
+                type: user.type,
+                role: this.modalRole || 'signer'
             });
         }
 
@@ -465,9 +458,7 @@ get mainCardClass() {
         this.normalizeRoutingOrders();
     }
 
-    // ─────────────────────────────────────────────
     // DRAG & DROP
-    // ─────────────────────────────────────────────
     handleDragStart(event) {
         if (!this.signingOrderEnabled) return;
         const key = event.currentTarget.dataset.key;
@@ -509,6 +500,11 @@ get mainCardClass() {
     }
 
     toggleSigningOrder() {
+
+        if (!this.hasRecipients) {
+            this.toast('Parallel signing', 'No recipients added', 'info');
+            return;
+        }
         this.signingOrderEnabled = !this.signingOrderEnabled;
         this.normalizeRoutingOrders();
     }
@@ -520,9 +516,7 @@ get mainCardClass() {
         this.toast('Routing Order', order || 'No recipients added', 'info');
     }
 
-    // ─────────────────────────────────────────────
     // EMAIL / REMINDERS / EXPIRY
-    // ─────────────────────────────────────────────
     handleSubject(event) { this.emailSubject = event.target.value; }
     handleMessage(event) { this.emailMessage = event.target.value; }
 
@@ -545,10 +539,10 @@ get mainCardClass() {
         this.expireDate = event.target.value;
         if (!this.expireDate) return;
 
-        const today        = new Date();
+        const today = new Date();
         const selectedDate = new Date(this.expireDate);
-        const diffDays     = Math.ceil((selectedDate - today) / (1000 * 60 * 60 * 24));
-        this.expireDays    = diffDays > 0 ? diffDays : 0;
+        const diffDays = Math.ceil((selectedDate - today) / (1000 * 60 * 60 * 24));
+        this.expireDays = diffDays > 0 ? diffDays : 0;
     }
 
     handleExpireDaysChange(event) {
@@ -562,9 +556,7 @@ get mainCardClass() {
         this.expireDate = futureDate.toISOString().split('T')[0];
     }
 
-    // ─────────────────────────────────────────────
     // NAVIGATION
-    // ─────────────────────────────────────────────
     handleBack() {
         this.currentStep = String(Number(this.currentStep) - 1);
     }
@@ -575,12 +567,29 @@ get mainCardClass() {
             return;
         }
         if (this.currentStep === '2') {
+            if (!this.validateDocuSignTagSelection()) {
+                return;
+            }
             this.isPreparing = true;
             this.send();
             return;
         }
         // Generic advance (future steps)
         this.currentStep = String(Number(this.currentStep) + 1);
+    }
+
+
+    validateDocuSignTagSelection() {
+        const combobox = this.template.querySelector('lightning-combobox[data-id="docusignTagsCombobox"]');
+        const isValid = combobox ? combobox.reportValidity() : true;
+        if (combobox && !isValid) {
+            return false;
+        }
+        if (!this.selectedValue) {
+            this.toast('Error', 'Please select whether to use DocuSign Document Tags.', 'error');
+            return false;
+        }
+        return true;
     }
 
     validatePollingAndContinue() {
@@ -605,43 +614,50 @@ get mainCardClass() {
         this.close('cancelled');
     }
 
-    // ─────────────────────────────────────────────
     // SEND
-    // ─────────────────────────────────────────────
     send() {
         if (this.isSending) return;
-
-        this.isSending    = true;
+        this.isSending = true;
         this.sendStartTime = Date.now();
+        const useAnchorTags = this.selectedValue === 'yes';
 
         sendForSignature({
-            agreementId:     this.recordId,
-            filesJson:       JSON.stringify(this.selectedFiles),
-            recipientsJson:  JSON.stringify(this.recipients),
-            reminderDays:    this.reminderDays,
+            agreementId: this.recordId,
+            filesJson: JSON.stringify(this.selectedFiles),
+            recipientsJson: JSON.stringify(this.recipients),
+            reminderDays: this.reminderDays,
             reminderEnabled: this.reminderDays > 0,
-            expireDays:      this.expireDays,
-            expireDate:      this.expireDate,
-            emailSubject:    this.emailSubject,
-            emailMessage:    this.emailMessage
+            expireDays: this.expireDays,
+            expireDate: this.expireDate,
+            emailSubject: this.emailSubject,
+            emailMessage: this.emailMessage,
+            useAnchorTags: useAnchorTags
         })
-        .then(() => {
-            this.toast('Envelope Queued', 'Opening DocuSign...', 'success');
-            this.pollForSenderView(0);
-        })
-        .catch(error => {
-            this.isSending   = false;
-            this.isPreparing = false;
-            this.toast('Error', error?.body?.message || 'DocuSign error', 'error');
-        });
+            .then(() => {
+                if (useAnchorTags) {
+                    this.isSending = false;
+                    this.isPreparing = false;
+                    this.toast('Envelope Sent', 'The agreement has been sent for signature.', 'success');
+                    this.close('sent');
+                } else {
+                    this.toast('Redirecting to Prepare & Send.', 'Please wait...', 'success');
+                    this.pollForSenderView(0);
+
+                }
+            })
+            .catch(error => {
+                this.isSending = false;
+                this.isPreparing = false;
+                this.toast('Error', error?.body?.message || 'DocuSign error', 'error');
+            });
     }
 
     pollForSenderView(elapsed) {
-        const TIMEOUT_MS  = 120000;
+        const TIMEOUT_MS = 120000;
         const INTERVAL_MS = 3000;
 
         if (elapsed >= TIMEOUT_MS) {
-            this.isSending   = false;
+            this.isSending = false;
             this.isPreparing = false;
             this.toast('Error', 'Timed out waiting for envelope.', 'error');
             return;
@@ -650,7 +666,7 @@ get mainCardClass() {
         window.setTimeout(() => {
             createSenderView({ agreementId: this.recordId, sentAtMillis: this.sendStartTime })
                 .then(url => {
-                    this.isSending   = false;
+                    this.isSending = false;
                     this.isPreparing = false;
                     window.location.href = url;
                 })
@@ -660,22 +676,20 @@ get mainCardClass() {
                         this.pollForSenderView(elapsed + INTERVAL_MS);
                         return;
                     }
-                    this.isSending   = false;
+                    this.isSending = false;
                     this.isPreparing = false;
                     this.toast('DocuSign Error', message || 'Failed to open DocuSign.', 'error');
                 });
         }, INTERVAL_MS);
     }
 
-    // ─────────────────────────────────────────────
     // UTILITIES
-    // ─────────────────────────────────────────────
     getRoleLabel(role) {
         switch (role) {
             case 'signer': return 'Needs to Sign';
-            case 'copy':   return 'Receives a Copy';
+            case 'copy': return 'Receives a Copy';
             case 'viewer': return 'Needs to View';
-            default:       return 'Needs to Sign';
+            default: return 'Needs to Sign';
         }
     }
 
@@ -683,10 +697,10 @@ get mainCardClass() {
         if (!dateValue) return '';
         try {
             return new Intl.DateTimeFormat('en-US', {
-                year:   'numeric',
-                month:  'short',
-                day:    'numeric',
-                hour:   '2-digit',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
                 minute: '2-digit'
             }).format(new Date(dateValue));
         } catch (e) {
@@ -696,7 +710,7 @@ get mainCardClass() {
 
     formatFileSize(bytes) {
         if (!bytes || bytes === 0) return '0 KB';
-        const k     = 1024;
+        const k = 1024;
         const sizes = ['Bytes', 'KB', 'MB', 'GB'];
         const index = Math.floor(Math.log(bytes) / Math.log(k));
         return (Math.round((bytes / Math.pow(k, index)) * 100) / 100) + ' ' + sizes[index];

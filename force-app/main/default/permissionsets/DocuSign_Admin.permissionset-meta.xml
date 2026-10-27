@@ -35,7 +35,7 @@
     <description>Full access to DocuSign package features</description>
     <externalCredentialPrincipalAccesses>
         <enabled>true</enabled>
-        <externalCredentialPrincipal>abcdocusign__DocuSign_OAuth2-DocuSign_Principal</externalCredentialPrincipal>
+        <externalCredentialPrincipal>DocuSign_OAuth2-DocuSign_Principal</externalCredentialPrincipal>
     </externalCredentialPrincipalAccesses>
     <fieldPermissions>
         <editable>true</editable>
