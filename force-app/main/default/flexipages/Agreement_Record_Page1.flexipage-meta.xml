@@ -175,6 +175,12 @@
         </itemInstances>
         <itemInstances>
             <componentInstance>
+                <componentName>docuSignEsignatureStatus</componentName>
+                <identifier>c_docuSignEsignatureStatus</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
                 <componentInstanceProperties>
                     <name>label</name>
                     <value>Tabs</value>

@@ -64,7 +64,7 @@
                             <div class="step2-toolbar">
                                 <h1 class="slds-text-heading_small">Recipients</h1>
                                 <div class="slds-button-group">
-                                    <lightning-button label="Signing Order" variant={signingOrderVariant}
+                                    <lightning-button label="Parallel signing" variant="neutral"
                                         icon-name="utility:layers" onclick={toggleSigningOrder}>
                                     </lightning-button>
                                     <lightning-button label="View Routing" icon-name="utility:preview"
@@ -186,8 +186,20 @@
                                             onchange={handleSubject} class="slds-m-bottom_small">
                                         </lightning-input>
                                         <lightning-textarea label="Email Message" value={emailMessage}
-                                            onchange={handleMessage}>
+                                            onchange={handleMessage} class="textarea">
                                         </lightning-textarea>
+                                    </div>
+                                    <div class="docusign-tags">
+                                        <div class="section-divider"></div>
+                                        <h3 class="slds-text-title_bold slds-m-bottom_small">Document Tagging
+                                            Settings</h3>
+                                        <lightning-combobox name="docusignTags" data-id="docusignTagsCombobox"
+                                            label="How do you want to add DocuSign tags to your document?"
+                                            options={docusigntagOptions} value={selectedValue}
+                                            placeholder="Select an option" onchange={handleChange}
+                                            message-when-value-missing="Please select an option before continuing."
+                                            required>
+                                        </lightning-combobox>
                                     </div>
                                     <!-- More Options accordion -->
                                     <lightning-accordion allow-multiple-sections-open>
@@ -226,6 +238,7 @@
                                                         class="small-number-input">
                                                     </lightning-input>
                                                 </div>
+
                                             </div>
                                         </lightning-accordion-section>
                                     </lightning-accordion>

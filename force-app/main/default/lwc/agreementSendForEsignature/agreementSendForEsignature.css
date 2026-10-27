@@ -370,6 +370,13 @@ lightning-modal-body {
     width: 220px;
 }
 
+.textarea {
+    --slds-c-textarea-sizing-min-height: 153px;
+    --slds-c-textarea-height: 153px;
+    /* keep old prefix too for orgs still on the legacy hook names */
+    --sds-c-textarea-sizing-min-height: 153px;
+}
+
 /* ── EMPTY STATE ── */
 .empty-state {
     text-align: center;
